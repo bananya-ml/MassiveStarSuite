@@ -1,17 +1,17 @@
 import os
 import torch
-from torch import nn
-from torch.optim.lr_scheduler import OneCycleLR
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 from model import StellarNet
-import matplotlib.pyplot as plt
+
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.class_weight import compute_class_weight
-
+from torch import nn
+from torch.optim.lr_scheduler import OneCycleLR
 
 def plot(training_losses, validation_losses, accuracy_scores, filename, save_fig=True):
     
@@ -65,20 +65,20 @@ def _init_weights(m):
         if m.bias is not None:
             nn.init.constant_(m.bias, 0)
 
-def train_model(X, y, spectrum_width):
+def train_model(X, y, spectrum_width, learning_rate, epochs, batch_size, device, weight_decay, patience):
 
-    def fit(model, x_train, y_train, x_val=None, y_val=None, prt_steps = 1, verbose=True):
+    def fit(model, x_train, y_train, x_val, y_val, learning_rate, epochs, batch_size, device, weight_decay, patience):
     
         model.apply(_init_weights)
 
         # hyperparameters
-        epochs = 50
-        learning_rate = 1e-4
-        batch_size = 64
-        device = 'cuda'
+        epochs = epochs
+        learning_rate = learning_rate
+        batch_size = batch_size
+        device = device
 
         # early stopping
-        patience = 10
+        patience = patience
         best_val_loss = float('inf')
         patience_counter = 0
         
@@ -86,7 +86,7 @@ def train_model(X, y, spectrum_width):
 
         # model components
         criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights[1])
-        optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=0.01)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         
         # move everything to gpu
         model.to(device)
@@ -105,7 +105,6 @@ def train_model(X, y, spectrum_width):
         scheduler = OneCycleLR(optimizer, max_lr=max_lr, steps_per_epoch=steps_per_epoch, epochs=epochs)
 
         batch_start = torch.arange(0, len(x_train), batch_size)
-
         t = tqdm(range(epochs), leave=True, dynamic_ncols=True, desc="Epochs")
 
         for epoch in t:
@@ -132,44 +131,43 @@ def train_model(X, y, spectrum_width):
 
             train_loss = running_loss / len(x_train)
             training_losses.append(train_loss)
-            if verbose and (epoch+1) % prt_steps == 0:
-                t.set_postfix({'Train Loss':train_loss})
 
-            if x_val is not None and y_val is not None:
-                model.eval()
-                preds, labels = [], []
+            t.set_postfix({'Train Loss':train_loss})
 
-                with torch.no_grad():
-                    
-                    x_spectra = x_val[:,:-2]
-                    x_context = x_val[:,-2:]
-                    output = model(x_spectra.unsqueeze(1), x_context)
-                    loss = criterion(output, y_val)
+            model.eval()
+            preds, labels = [], []
 
-                    probs = torch.sigmoid(output)
-                    pred = torch.round(probs).cpu().numpy().astype(float)  # pred: [batch_size]
-                    
-                    preds.extend(pred)
-                    labels.extend(y_val.cpu().numpy())
-                    
-                    val_loss = loss.item()
+            with torch.no_grad():
                 
-                epoch_acc = accuracy_score(labels, preds)
-                validation_losses.append(val_loss)
-                accuracy.append(epoch_acc)
-                if verbose and (epoch+1) % prt_steps == 0:
-                    t.set_postfix({'Train loss': train_loss, 'Val Loss': val_loss, 'Accuracy': epoch_acc})
+                x_spectra = x_val[:,:-2]
+                x_context = x_val[:,-2:]
+                output = model(x_spectra.unsqueeze(1), x_context)
+                loss = criterion(output, y_val)
 
-                # Early stopping
-                if val_loss < best_val_loss:
-                    best_val_loss = val_loss
-                    patience_counter = 0
-                else:
-                    patience_counter += 1
+                probs = torch.sigmoid(output)
+                pred = torch.round(probs).cpu().numpy().astype(float)
+                
+                preds.extend(pred)
+                labels.extend(y_val.cpu().numpy())
+                
+                val_loss = loss.item()
+            
+            epoch_acc = accuracy_score(labels, preds)
+            validation_losses.append(val_loss)
+            accuracy.append(epoch_acc)
 
-                if patience_counter >= patience:
-                    t.set_postfix_str(f'Early stopping triggered at epoch {epoch+1}')
-                    break
+            t.set_postfix({'Train loss': train_loss, 'Val Loss': val_loss, 'Accuracy': epoch_acc})
+
+            # Early stopping
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                patience_counter = 0
+            else:
+                patience_counter += 1
+
+            if patience_counter >= patience:
+                t.set_postfix_str(f'Early stopping triggered at epoch {epoch+1}')
+                break
 
         return model, training_losses, validation_losses, accuracy
 
@@ -182,7 +180,7 @@ def train_model(X, y, spectrum_width):
         
         print(f"\nFitting fold {fold+1}")
 
-        model, tr_loss, val_loss, acc = fit(model, X[train_idx], y[train_idx], X[val_idx], y[val_idx], prt_steps=10, verbose=True)
+        model, tr_loss, val_loss, acc = fit(model, X[train_idx], y[train_idx], X[val_idx], y[val_idx], learning_rate, epochs, batch_size, device, weight_decay, patience)
         models.append(model)
         training_losses_foldx.append(tr_loss)
         validation_losses_foldx.append(val_loss)
@@ -220,18 +218,19 @@ def prepare_data(data_dir):
     # encode categories to int
     y = torch.from_numpy(np.where(y == 'M', 1, np.where(y == 'LM', 0, y)).astype(float))
 
+    print("Data loaded!")
     return X, y, spectrum_width
 
 def main():
 
+    print("Starting training...")
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    data_dir = 'data/train.parquet'
+    data_dir = '../data/train.parquet'
 
     X, y, spectrum_width = prepare_data(data_dir)
-    print(type(X))
-    print("Data loaded!")
-    models = train_model(X, y, spectrum_width)
 
+    models = train_model(X, y, spectrum_width, learning_rate=1e-4, epochs=50, batch_size=64, device='cuda' if torch.cuda.is_available() else 'cpu', weight_decay=0.01, patience=5)
+    
     # save trained model
     torch.save(models,'../trained_models/StellarNet.pth')
 
