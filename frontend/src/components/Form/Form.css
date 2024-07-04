@@ -1,0 +1,25 @@
+.grad-text {
+    font-size:2.25rem;
+    text-align:center;
+    color:white;
+    margin-top: 150px;
+    cursor:default;
+    background-image:linear-gradient(to right, white 33.33333%, orange 66.66666%, indigo);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 300% 100%;
+    background-position: top left;
+    transition:all 500ms ease-in-out;
+  }
+  
+  .grad-text:hover {
+    background-position: top left 100%;
+    transform: translateY(-0.25rem) scale(1.1);
+    color: rgba(0, 0, 0, 0);
+  }
+
+  @keyframes rainbow { 
+    0%{background-position:left}
+    50%{background-position:right}
+    100%{background-position:left}
+  }

@@ -1,0 +1,52 @@
+.hoverText {
+  transition:
+    0.05s font-weight,
+    0.05s color;
+}
+
+.hoverText-orange:hover {
+  font-weight: 900;
+  color: #ff9e00;
+}
+
+.hoverText-orange:hover + .hoverText-orange {
+  font-weight: 500;
+  color: #f58300;
+}
+
+.hoverText-orange:hover + .hoverText-orange + .hoverText-orange {
+  font-weight: 300;
+}
+
+.hoverText-orange:has(+ .hoverText-orange:hover) {
+  font-weight: 500;
+  color: #f58300;
+}
+
+.hoverText-orange:has(+ .hoverText-orange + .hoverText-orange:hover) {
+  font-weight: 300;
+}
+
+
+.hoverText-indigo:hover {
+  font-weight: 900;
+  color: #b65eff;
+}
+
+.hoverText-indigo:hover + .hoverText-indigo {
+  font-weight: 500;
+  color: #8300e7;
+}
+
+.hoverText-indigo:hover + .hoverText-indigo + .hoverText-indigo {
+  font-weight: 300;
+}
+
+.hoverText-indigo:has(+ .hoverText-indigo:hover) {
+  font-weight: 500;
+  color: #8300e7;
+}
+
+.hoverText-indigo:has(+ .hoverText-indigo + .hoverText-indigo:hover) {
+  font-weight: 300;
+}

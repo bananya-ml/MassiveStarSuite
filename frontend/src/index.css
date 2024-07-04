@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: 'Noto Sans Variable', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-cover bg-center;
+    background-image: url('/bg.jpg');
+    background-attachment:fixed;
+    height: 100vh;
+  }
+}
