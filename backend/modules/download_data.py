@@ -1,7 +1,5 @@
 import os
-import pandas as pd
 from astroquery.gaia import Gaia
-import torch
 
 def pull_data(results):
     retrieval_type = 'XP_SAMPLED'  
@@ -25,10 +23,3 @@ def pull_data(results):
                 os.makedirs(data_dir)
                 product.write(os.path.join(data_dir,file_name), format = 'csv', overwrite = True)
     return data_dir
-
-
-#if __name__ == "__main__":
-    
-    # test data
-    #results = pd.DataFrame({'SOURCE_ID':'4111834567779557376'})
-    #data_dir = pull_data(results)
