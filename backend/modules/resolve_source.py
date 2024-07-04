@@ -1,7 +1,6 @@
 from astroquery.gaia import Gaia
-from typing import List
 
-def resolve(id:str=None, coords:List=None):
+def resolve(id:str=None, ra:str=None, dec:str=None):
     
     if id:
         job = Gaia.launch_job_async(f"SELECT gaia3.source_id, gaia3.ra, gaia3.dec, gaia3.parallax, gaia3.parallax_over_error,gaia3.ruwe, gaia3.has_xp_sampled, gaia3ap.classprob_dsc_combmod_star, gaia3ap.classprob_dsc_specmod_star \
@@ -10,12 +9,12 @@ def resolve(id:str=None, coords:List=None):
                             ON gaia3.source_id = gaia3ap.source_id \
                             WHERE gaia3.source_id = {id}")
         results = job.get_results()
-    elif coords:
+    elif ra and dec:
         job = Gaia.launch_job_async(f"SELECT gaia3.source_id, gaia3.ra, gaia3.dec, gaia3.parallax, gaia3.parallax_over_error,gaia3.ruwe, gaia3.has_xp_sampled, gaia3ap.classprob_dsc_combmod_star, gaia3ap.classprob_dsc_specmod_star \
                     FROM gaiadr3.gaia_source_lite AS gaia3 \
                     JOIN gaiadr3.astrophysical_parameters AS gaia3ap \
                     ON gaia3.source_id = gaia3ap.source_id \
-                    WHERE gaia3.ra = {coords[0]} AND gaia3.dec={coords[1]}")
+                    WHERE gaia3.ra = {ra} AND gaia3.dec={dec}")
         results = job.get_results()
     else:
         raise ValueError("Either 'id' or 'coords' must be provided!")

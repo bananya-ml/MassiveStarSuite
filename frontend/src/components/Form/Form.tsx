@@ -1,3 +1,4 @@
+import axios from 'axios'
 import React, { useState } from 'react';
 import { 
   Tab,
@@ -10,11 +11,41 @@ import {
 const Form = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [inputValue, setInputValue] = useState('');
+  const [prediction, setPrediction] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Submitted:', inputValue);
+    setPrediction(null);
+    setError(null);
+
+    try {
+      let response;
+      if (selectedTab === 0) {
+        // Submit Source ID
+        console.log('Submitting Source ID:', inputValue);
+        response = await axios.post('http://127.0.0.1:8000/predict/id', {
+          source_id: inputValue,
+        });
+      } else {
+        // Submit Coordinates
+        console.log('Submitting Coordinates:', inputValue);
+        const [ra, dec] = inputValue.split(' ');
+        response = await axios.post('http://127.0.0.1:8000/predict/coordinates', {
+          ra: parseFloat(ra),
+          dec: parseFloat(dec),
+        });
+      }
+      console.log('Response:', response.data);
+      setPrediction(response.data.prediction);
+    } catch (err) {
+      console.error('Error:', err);
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
+    }
   };
 
   return (
