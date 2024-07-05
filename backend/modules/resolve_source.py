@@ -14,7 +14,7 @@ def resolve(id:str=None, ra:str=None, dec:str=None):
                     FROM gaiadr3.gaia_source_lite AS gaia3 \
                     JOIN gaiadr3.astrophysical_parameters AS gaia3ap \
                     ON gaia3.source_id = gaia3ap.source_id \
-                    WHERE gaia3.ra = {ra} AND gaia3.dec={dec}")
+                    WHERE gaia3.ra = {ra} AND gaia3.dec= {dec}")
         results = job.get_results()
     else:
         raise ValueError("Either 'id' or 'coords' must be provided!")

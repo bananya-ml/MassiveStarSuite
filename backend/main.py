@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
 from modules.resolve_source import resolve
 from modules.download_data import pull_data
 from modules.inference import inference
+
 import glob
 import pandas as pd
 import shutil
@@ -53,7 +55,11 @@ async def predict_by_id(source_id: SourceID):
         
         clean_temp(data_dir)
         
-        return {"prediction": prediction.tolist()}
+        return {
+            "prediction": prediction.tolist(),
+            "ra": results['ra'],
+            "dec": results['dec']
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
