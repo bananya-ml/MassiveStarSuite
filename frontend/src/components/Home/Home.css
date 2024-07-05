@@ -1,3 +1,14 @@
+.custom-gradient {
+  background-image: linear-gradient(
+    to right,
+    transparent 20%,
+    #f97316 30%,
+    #4f46e5 50%,
+    #f97316 70%,
+    transparent 80%
+  );
+}
+
 .grad-text {
     font-size:3.25rem;
     text-align:center;
@@ -8,7 +19,7 @@
     -webkit-text-fill-color: transparent;
     background-size: 300% 100%;
     background-position: top left;
-    transition:all 500ms ease-in-out;
+    transition:all 200ms ease-in-out;
   }
   
 .grad-text:hover {

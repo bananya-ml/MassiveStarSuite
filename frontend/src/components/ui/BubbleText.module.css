@@ -4,6 +4,31 @@
     0.05s color;
 }
 
+.hoverText-default:hover {
+  font-weight: 900;
+  color: #c7d2fe;
+}
+
+.hoverText-default:hover + .hoverText-default {
+  font-weight: 500;
+  color: #eef2ff;
+}
+
+.hoverText-default:hover + .hoverText-default + .hoverText-default {
+  font-weight: 300;
+  color: #eef2ff;
+}
+
+.hoverText-default:has(+ .hoverText-default:hover) {
+  font-weight: 500;
+  color: #eef2ff;
+}
+
+.hoverText-default:has(+ .hoverText-default + .hoverText-default:hover) {
+  font-weight: 300;
+  color: #eef2ff;
+}
+
 .hoverText-orange:hover {
   font-weight: 900;
   color: #ff9e00;
@@ -16,6 +41,7 @@
 
 .hoverText-orange:hover + .hoverText-orange + .hoverText-orange {
   font-weight: 300;
+  color: #f58300;
 }
 
 .hoverText-orange:has(+ .hoverText-orange:hover) {
@@ -25,6 +51,7 @@
 
 .hoverText-orange:has(+ .hoverText-orange + .hoverText-orange:hover) {
   font-weight: 300;
+  color: #f58300;
 }
 
 
@@ -35,18 +62,46 @@
 
 .hoverText-indigo:hover + .hoverText-indigo {
   font-weight: 500;
-  color: #8300e7;
+  color: #b649ff;
 }
 
 .hoverText-indigo:hover + .hoverText-indigo + .hoverText-indigo {
   font-weight: 300;
+  color: #b649ff;
 }
 
 .hoverText-indigo:has(+ .hoverText-indigo:hover) {
   font-weight: 500;
-  color: #8300e7;
+  color: #b649ff;
 }
 
 .hoverText-indigo:has(+ .hoverText-indigo + .hoverText-indigo:hover) {
   font-weight: 300;
+  color: #b649ff;
+}
+
+
+.hoverText-red:hover {
+  font-weight: 900;
+  color: #ff3b3b;
+}
+
+.hoverText-red:hover + .hoverText-red {
+  font-weight: 500;
+  color: #ac0000;
+}
+
+.hoverText-red:hover + .hoverText-red + .hoverText-red {
+  font-weight: 300;
+  color: #ac0000;
+}
+
+.hoverText-red:has(+ .hoverText-red:hover) {
+  font-weight: 500;
+  color: #ac0000;
+}
+
+.hoverText-red:has(+ .hoverText-red + .hoverText-red:hover) {
+  font-weight: 300;
+  color: #ac0000;
 }
