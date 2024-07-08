@@ -1,9 +1,14 @@
 import styles from './BubbleText.module.css';
 
-const BubbleText = ({ text, colorScheme = 'default' }) => {
+interface BubbleTextProps {
+  text: string;
+  colorScheme?: 'default' | 'red' | 'orange' | 'indigo';
+}
+
+const BubbleText: React.FC<BubbleTextProps> = ({ text, colorScheme = 'default' }) => {
   return (
     <p>
-      {text.split("").map((child, idx) => (
+      {text.split("").map((child:string, idx:number) => (
         <span 
           className={`${styles.hoverText} ${styles[`hoverText-${colorScheme}`]}`} 
           key={idx}

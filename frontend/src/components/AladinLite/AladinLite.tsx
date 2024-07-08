@@ -10,6 +10,7 @@ type AladinLiteProps = {
   width?: string;
   height?: string;
   fov?: number;
+  onReady?: () => void;
 } & (
   | { id: string; ra?: never; dec?: never }
   | { id?: never; ra: string; dec: string }
@@ -21,7 +22,8 @@ const AladinLite: React.FC<AladinLiteProps> = ({
   id,
   ra,
   dec,
-  fov = 0.1
+  fov = 0.1,
+  onReady
 }) => {
   const aladinRef = useRef<HTMLDivElement>(null);
   const aladinInstance = useRef<any>(null);
@@ -40,6 +42,11 @@ const AladinLite: React.FC<AladinLiteProps> = ({
             fov: fov,
             target: id ? `Gaia DR3 ${id}` : `${ra} ${dec}`
           });
+          
+          // Call onReady when Aladin is initialized
+          if (onReady) {
+            onReady();
+          }
         }).catch((error: Error) => {
           console.error("Failed to initialize Aladin Lite:", error);
         });
@@ -55,7 +62,7 @@ const AladinLite: React.FC<AladinLiteProps> = ({
         aladinInstance.current.destroy();
       }
     };
-  }, [id, ra, dec, fov]);
+  }, [id, ra, dec, fov, onReady]);
 
   useEffect(() => {
     if (aladinInstance.current) {
