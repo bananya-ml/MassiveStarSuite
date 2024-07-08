@@ -1,5 +1,14 @@
 from astroquery.gaia import Gaia
 
+class NoSourceFoundError(Exception):
+    pass
+
+class PoorSourceQualityError(Exception):
+    pass
+
+class NoDataError(Exception):
+    pass
+
 def resolve(id:str=None, ra:str=None, dec:str=None):
     
     if id:
@@ -20,17 +29,22 @@ def resolve(id:str=None, ra:str=None, dec:str=None):
         raise ValueError("Either 'id' or 'coords' must be provided!")
     
     if results.to_pandas().empty:
-            print("No sources found!")
-    else:
-        _check_quality(results.to_pandas())
-    return results.to_pandas()
+        raise NoSourceFoundError("No sources found!")
+    
+    df_results = results.to_pandas()
+    _check_quality(df_results)
+    return df_results
 
 def _check_quality(results):
+    issues = []
     if (results['ruwe'] > 1.4).any() or results['parallax'].isnull().any() or (results['parallax_over_error'] <= 3).any():
-        print("The source has poor parameters, it might not be properly resolved.")
+        issues.append("The source has poor parameters, it might not be properly resolved.")
 
     if (results['classprob_dsc_combmod_star']<0.5).any() or (results['classprob_dsc_specmod_star']<0.5).any():
-        print("The source is most likely not a star.")
+        issues.append("The source is most likely not a star.")
     
     if (results['has_xp_sampled'] != True).any():
-        print("The source has no BP-RP spectrum data in Gaia Data Release 3!")
+        raise NoDataError("The source has no BP-RP spectrum data in Gaia Data Release 3!")
+    
+    if issues:
+        raise PoorSourceQualityError("; ".join(issues))
