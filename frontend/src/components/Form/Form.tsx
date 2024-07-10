@@ -11,13 +11,18 @@ import {
 import AladinLite from '../AladinLite/AladinLite';
 import BarLoader from '../ui/loader';
 
+interface ErrorResponse {
+  error: string;
+  detail: string;
+}
+
 const Form = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [sourceId, setSourceId] = useState('');
   const [ra, setRa] = useState('');
   const [dec, setDec] = useState('');
   const [prediction, setPrediction] = useState(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorResponse | null>(null);
   const [showESASky1, setShowESASky1] = useState(false);
   const [showESASky2, setShowESASky2] = useState(false);
   const [aladinData, setAladinData] = useState<{ id?: string; ra?: string; dec?: string }>({});
@@ -77,10 +82,17 @@ const Form = () => {
       setPrediction(response.data.prediction[0][0]);
     } catch (err) {
       console.error('Error:', err);
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || err.message);
+      if (axios.isAxiosError(err) && err.response) {
+        const errorData = err.response.data as ErrorResponse;
+        setError({
+          error: errorData.error || 'Unknown error',
+          detail: errorData.detail || err.message
+        });
       } else {
-        setError('An unexpected error occurred');
+        setError({
+          error: 'UnexpectedError',
+          detail: 'An unexpected error occurred'
+        });
       }
       setShowAladin(false);
     }
@@ -105,7 +117,8 @@ const Form = () => {
     if (error) {
       return (
         <div className="mt-4 p-4 bg-red-500/20 text-red-100 rounded-lg">
-          <p>Error: {error}</p>
+          <h3 className="text-lg font-semibold mb-2">{error.error}</h3>
+          <p>{error.detail}</p>
         </div>
       );
     }
@@ -242,7 +255,7 @@ const Form = () => {
               <div className="flex-grow" />
               <button
                 type="submit"
-                className="w-full p-2 bg-red-950 text-white rounded hover:bg-white hover:text-black transition-colors flex items-center justify-center h-10"
+                className="w-full p-2 bg-red-950 text-white rounded hover:bg-white hover:text-black flex items-center justify-center h-10"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -295,7 +308,7 @@ const Form = () => {
               <div className="flex-grow" />
               <button
                 type="submit"
-                className="w-full p-2 bg-red-950 text-white rounded hover:bg-white hover:text-black transition-colors flex items-center justify-center"
+                className="w-full p-2 bg-red-950 text-white rounded hover:bg-white hover:text-black flex items-center justify-center"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? <BarLoader /> : "Submit"}
