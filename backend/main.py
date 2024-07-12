@@ -80,6 +80,9 @@ async def general_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"error": "Internal Server Error", "detail": str(exc)}
     )
+@app.get("/")
+async def check():
+    return "Server is running!"
 
 @app.post("/predict/id", response_model=dict, responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}})
 async def predict_by_id(source_id: SourceID, request: Request):
