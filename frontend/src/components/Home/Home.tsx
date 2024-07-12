@@ -36,7 +36,7 @@ const Home = () => {
             </div>
           </div>
           <div className="w-2/5 pl-6 flex flex-col items-center [perspective:800px]">
-            <img src="/etacarinae.jpg" alt="Massive star image" className="w-full max-w-[500px] border-slate-800 border-2 rounded h-auto mb-2 transition-all duration-75 hover:border-purple-600" />
+            <img src="/etacarinae.jpg" alt="Massive star image" className="w-full max-w-[500px] border-slate-800 border-2 rounded h-auto mb-2 transition-all duration-50 hover:border-purple-600" />
             <p className="text-sm text-gray-300 text-center">
               NASA Image of the Eta Carinae star, a star 100 times the mass of our Sun<br />
               Credits: NASA, ESA, Hubble; Processing & License: Judy Schmidt
@@ -46,7 +46,7 @@ const Home = () => {
         
         <div className="flex items-start justify-between">
           <div className="w-2/5 pr-6 flex flex-col items-center">
-            <img src="/cygnusx.jpg" alt="Molecular cloud image" className="w-full max-w-[500px] border-slate-800 border-2 rounded h-auto mb-2 transition-all duration-75 hover:border-orange-400" />
+            <img src="/cygnusx.jpg" alt="Molecular cloud image" className="w-full max-w-[500px] border-slate-800 border-2 rounded h-auto mb-2 transition-all duration-50 hover:border-orange-400" />
             <p className="text-sm text-gray-300 text-center">
               Cygnus X, a star formation region, dominated by a massive cloud complex<br />
               Credits: NASA

@@ -16,6 +16,13 @@ import os
 import time
 from datetime import datetime
 
+# environment variables
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'production')
+PORT = int(os.getenv('PORT', 8000))
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+MODEL_PATH = os.getenv('MODEL_PATH', './models/cnn_ensemble.pth')
+
 log_dir = "logs"
 os.makedirs(log_dir, exist_ok=True)
 current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -32,7 +39,7 @@ file_handler.setFormatter(formatter)
 console_handler.setFormatter(formatter)
 
 logger = logging.getLogger()
-logging.basicConfig(level=logging.DEBUG, handlers=[file_handler, console_handler])
+logging.basicConfig(level=LOG_LEVEL, handlers=[file_handler, console_handler])
 
 # log the start of the application
 logger.info(f"Starting application. Log file: {log_file}")
@@ -41,10 +48,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=['*'],
-    allow_methods=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
+    max_age=3600,
 )
 
 class SourceID(BaseModel):
@@ -58,7 +66,7 @@ class ErrorResponse(BaseModel):
     error: str
     detail: str
 
-def clean_temp(data_dir):
+def _clean_temp(data_dir):
     try:
         shutil.rmtree(data_dir)
         logger.info(f"Deleted {data_dir} directory and its contents.")
@@ -90,10 +98,10 @@ async def predict_by_id(source_id: SourceID, request: Request):
         data = pd.read_csv(csv_files[0])
         X = data['flux'].to_numpy()
         
-        model = torch.jit.load('./models/cnn_ensemble.pth', map_location=torch.device('cpu'))
+        model = torch.jit.load(MODEL_PATH, map_location=torch.device('cpu'))
         prediction = inference(model, torch.from_numpy(X).float().unsqueeze(0))
         
-        clean_temp(data_dir)
+        _clean_temp(data_dir)
         
         end_time = time.time()
         logger.info(f"Prediction for source ID {source_id.source_id} completed in {end_time - start_time:.2f} seconds")
@@ -142,7 +150,7 @@ async def predict_by_coordinates(coordinates: Coordinates, request: Request):
         model = torch.jit.load('./models/cnn_ensemble.pth', map_location=torch.device('cpu'))
         prediction = inference(model, torch.from_numpy(X).float().unsqueeze(0))
         
-        clean_temp(data_dir)
+        _clean_temp(data_dir)
         
         end_time = time.time()
         logger.info(f"Prediction for coordinates (RA={coordinates.ra}, Dec={coordinates.dec}) completed in {end_time - start_time:.2f} seconds")
@@ -170,4 +178,4 @@ async def predict_by_coordinates(coordinates: Coordinates, request: Request):
 if __name__ == "__main__":
     import uvicorn
     logger.info("Starting the FastAPI application")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
