@@ -4,6 +4,7 @@ import Home from './components/Home/Home';
 import Footer from './components/Footer/Footer';
 import ResultsList from './components/ResultsList/ResultsList';
 import GaiaNote from './components/GaiaNote/GaiaNote';
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [selectedSource, setSelectedSource] = useState<string>('');
@@ -17,6 +18,7 @@ function App() {
           <Form selectedSource={selectedSource} setSpectrumData={setSpectrumData} />
         </div>
         <GaiaNote />
+        <Analytics />
         <Footer />
       </div>
   )
