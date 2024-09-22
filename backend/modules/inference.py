@@ -38,6 +38,20 @@ class InferenceError(Exception):
     """
     pass
 
+def l2_normalize(tensor: torch.Tensor, eps: float = 1e-10) -> torch.Tensor:
+    """
+    L2 normalizes the input tensor.
+    
+    Args:
+        tensor (torch.Tensor): The input tensor to normalize.
+        eps (float): A small value to avoid division by zero.
+    
+    Returns:
+        torch.Tensor: The L2-normalized tensor.
+    """
+    norm = tensor.norm(p=2, dim=1, keepdim=True)
+    return tensor / norm
+
 def inference(model: torch.nn.Module, X: torch.Tensor) -> np.ndarray:
     """
     Performs inference using a trained PyTorch model on the provided input data.
@@ -47,7 +61,7 @@ def inference(model: torch.nn.Module, X: torch.Tensor) -> np.ndarray:
     The predictions are then converted to a numpy array and returned.
 
     Args:
-        model (torch.nn.Module): The PyTorch model to be used for inference.
+        model torch.nn.Module: The PyTorch model to be used for inference.
         X (torch.Tensor): The input tensor data on which inference is performed. 
                           Expected to be a 2D tensor where each row represents 
                           a sample and each column a feature.
@@ -60,9 +74,12 @@ def inference(model: torch.nn.Module, X: torch.Tensor) -> np.ndarray:
     """
     logger.info("Starting inference")
     try:
-        # Set the model to evaluation mode
+        # Perform L2 normalization on the input
+        X = l2_normalize(X)
+
+        # Set model to evaluation mode
         model.eval()
-        
+
         # Perform inference without tracking gradients
         with torch.no_grad():
             logger.debug(f"Input shape: {X.shape}")
@@ -72,13 +89,14 @@ def inference(model: torch.nn.Module, X: torch.Tensor) -> np.ndarray:
             
             # Apply sigmoid activation to convert output to probabilities
             prob = torch.sigmoid(output)
-            
-            # Round the probabilities to get binary predictions
-            prediction = torch.round(prob).numpy().astype(float)
-            
-            logger.info(f"Inference completed. Prediction shape: {prediction.shape}")
-            return prediction
-    
+            logger.debug(f"Probability: {prob}")
+
+        # Round the probabilities to get binary predictions
+        prediction = torch.round(prob).numpy().astype(float)
+
+        logger.info(f"Inference completed. Prediction shape: {prediction.shape} and prediction: {prediction}")
+        return prediction
+
     except Exception as e:
         # Log the error and raise a custom exception
         logger.error(f"Error occurred during inference: {str(e)}", exc_info=True)

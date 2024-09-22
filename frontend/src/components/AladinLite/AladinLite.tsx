@@ -37,10 +37,11 @@ const AladinLite: React.FC<AladinLiteProps> = ({
     const initAladin = () => {
       if (aladinRef.current && window.A) {
         window.A.init.then(() => {
+          const targetId = id && /^\d+$/.test(id) ? `Gaia DR3 ${id}` : id;
           aladinInstance.current = window.A.aladin(aladinRef.current, {
             survey: "P/DSS2/color",
             fov: fov,
-            target: id ? `Gaia DR3 ${id}` : `${ra} ${dec}`
+            target: targetId ? targetId : `${ra} ${dec}`
           });
           
           // Call onReady when Aladin is initialized

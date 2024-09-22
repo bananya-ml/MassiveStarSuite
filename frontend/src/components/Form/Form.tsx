@@ -1,5 +1,5 @@
 import axios from 'axios'
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import BubbleText from '../ui/bubbletext'
 import { 
   Tab,
@@ -16,23 +16,32 @@ interface ErrorResponse {
   detail: string;
 }
 
-const Form = () => {
+const Form = ({ selectedSource, setSpectrumData }: { selectedSource: string, setSpectrumData: React.Dispatch<React.SetStateAction<{ wavelength: number[], flux: number[] } | null>> }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [sourceId, setSourceId] = useState('');
   const [ra, setRa] = useState('');
   const [dec, setDec] = useState('');
   const [prediction, setPrediction] = useState(null);
   const [error, setError] = useState<ErrorResponse | null>(null);
-  const [showESASky1, setShowESASky1] = useState(false);
+  const [showESASky1, setShowESASky1] = useState(true); // Set to true for default checked
   const [showESASky2, setShowESASky2] = useState(false);
   const [aladinData, setAladinData] = useState<{ id?: string; ra?: string; dec?: string }>({});
   const [showAladin, setShowAladin] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAladinLoading, setIsAladinLoading] = useState(true);
+  const [formattedSourceId, setFormattedSourceId] = useState('');
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
+  useEffect(() => {
+    if (selectedSource) {
+      setSourceId(selectedSource);
+      setFormattedSourceId(selectedSource); // Set formattedSourceId as well
+      setSelectedTab(0); // Switch to the Source ID tab
+    }
+  }, [selectedSource]);
 
   useEffect(() => {
     if (showAladin && containerRef.current) {
@@ -49,25 +58,30 @@ const Form = () => {
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
-    resetForm()
     e.preventDefault();
+    resetForm();
     setPrediction(null);
     setError(null);
     setAladinData({});
     setIsSubmitting(true);
-
+    console.log("Formatted Source ID:", formattedSourceId);
     try {
       let response;
       if (selectedTab === 0) {
-        console.log('Submitting Source ID:', sourceId);
+        if (!formattedSourceId.trim()) {
+          throw new Error("Source ID is required");
+        }
         response = await axios.post(`${API_BASE_URL}/predict/id`, {
-          source_id: sourceId,
+          source_id: formattedSourceId,
         });
         setShowAladin(showESASky1);
-        if (sourceId) {
-          setAladinData({ id: sourceId });
+        if (formattedSourceId) {
+          setAladinData({ id: formattedSourceId });
         }
       } else {
+        if (!ra.trim() || !dec.trim()) {
+          throw new Error("Both RA and DEC are required");
+        }
         console.log('Submitting Coordinates:', {ra, dec});
         response = await axios.post(`${API_BASE_URL}/predict/coordinates`, {
           ra: parseFloat(ra),
@@ -78,6 +92,7 @@ const Form = () => {
           setAladinData({ ra: ra, dec: dec });
         }
       }
+      setSpectrumData(response.data.spectrum);
       console.log('Response:', response.data);
       setPrediction(response.data.prediction[0][0]);
     } catch (err) {
@@ -88,6 +103,11 @@ const Form = () => {
           error: errorData.error || 'Unknown error',
           detail: errorData.detail || err.message
         });
+      } else if (err instanceof Error) {
+        setError({
+          error: 'ValidationError',
+          detail: err.message
+        });
       } else {
         setError({
           error: 'UnexpectedError',
@@ -95,6 +115,7 @@ const Form = () => {
         });
       }
       setShowAladin(false);
+      setSpectrumData(null);
     }
     setIsSubmitting(false);
   };
@@ -105,7 +126,11 @@ const Form = () => {
         <div className="mt-4 p-4 bg-white/10 rounded-lg">
           <h2 className="text-white text-xl font-semibold mb-2">Prediction:</h2>
             <div className="text-2xl text-white text-center mt-8">
-            {prediction ? <BubbleText text="This source is likely not a massive star." colorScheme='red'/> : <BubbleText text="This source is a massive star!" colorScheme='red'/>}
+            {prediction === 0 ? (
+                <BubbleText text="This source is likely not a massive star." colorScheme='red'/>
+              ) : (
+                <BubbleText text="This source is a massive star!" colorScheme='red'/>
+            )}
             </div>
         </div>
       );
@@ -159,31 +184,26 @@ const Form = () => {
     return null;
   };
 
+  const handleSourceIdChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    setSourceId(input);
+    // Removed formatting logic
+    setFormattedSourceId(input); // Directly set the input value
+  }, []);
+
+  const handleSourceIdInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSourceId(e.target.value);
+    handleSourceIdChange(e); // This will now just set the input value
+  };
+
   return (
-    <div ref={containerRef} className="mt-16 flex flex-col items-center justify-center h-full">
+    <div ref={containerRef} className="mt-16 flex flex-col items-center justify-center h-full flex-1">
       <h1 className="text-4xl">
         <span className='text-white'>Find out if your</span> 
         <span className="text-red-600"> source</span>
-        <span className='text-white'> is a massive star!</span>
+        <span className='text-white'> is a massive star</span>
       </h1>
-      <h2 className="text-white text-sm text-center mt-6 w-2/5">
-        This work has made use of data from the European Space Agency (ESA) mission Gaia (
-        <a
-        href="https://www.cosmos.esa.int/gaia"
-        rel="noopener noreferrer"
-        className="text-sm text-blue-400 hover:text-blue-300">
-           https://www.cosmos.esa.int/gaia
-        </a>
-          ), processed by the Gaia Data Processing and Analysis Consortium (DPAC, 
-        <a
-        href="https://www.cosmos.esa.int/web/gaia/dpac/consortium"
-        rel="noopener noreferrer"
-        className="text-sm text-blue-400 hover:text-blue-300">
-           https://www.cosmos.esa.int/web/gaia/dpac/consortium
-        </a>
-        ).  Funding for the DPAC has been provided by national institutions, in particular the institutions participating in the Gaia Multilateral Agreement.
-      </h2>
-      <div className={`flex flex-col mt-10 items-stretch justify-start rounded p-6 bg-zinc-800/75 backdrop-blur-sm saturate-200 border-[1px] border-slate-950 border-solid w-2/6 h-auto transition-all duration-500 ease-in-out`}>
+      <div className={`flex flex-col mt-10 w-2/3 items-stretch justify-start rounded p-6 bg-zinc-800/75 backdrop-blur-sm saturate-200 border-[1px] border-slate-950 border-solid h-auto transition-all duration-500 ease-in-out`}>
       <TabGroup selectedIndex={selectedTab} onChange={setSelectedTab} className="flex flex-col h-full">
         <TabList className="flex space-x-1 rounded-xl bg-red-950/20 p-1 w-full relative">
           <div
@@ -216,7 +236,7 @@ const Form = () => {
                 className="w-full p-2 border border-gray-300 rounded bg-white text-black"
                 placeholder="Enter Source ID"
                 value={sourceId}
-                onChange={(e) => setSourceId(e.target.value)}
+                onChange={handleSourceIdInputChange}
               />
               <div className="flex flex-col">
                 <div className="flex items-center mb-2">
@@ -292,7 +312,7 @@ const Form = () => {
                     type="checkbox"
                     id="showSourceESASky2"
                     className="mr-2"
-                    checked={showESASky1}
+                    checked={showESASky2}
                     onChange={(e) => setShowESASky2(e.target.checked)}
                   />
                   <label htmlFor="showSourceESASky2" className="text-white text-md">
