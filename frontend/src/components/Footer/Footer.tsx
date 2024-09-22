@@ -41,7 +41,7 @@ const Footer = () => {
         <div className="mt-8 pt-8 border-t border-gray-800 text-sm text-gray-400">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p>&copy; {currentYear} Ananya Bhatnagar. All rights reserved.</p>
-            <p className="mt-2 md:mt-0">App Version 0.1.0</p>
+            <p className="mt-2 md:mt-0">App Version 0.2.0</p>
           </div>
         </div>
       </div>
