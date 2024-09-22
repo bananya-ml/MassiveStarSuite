@@ -26,6 +26,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from pathlib import Path
 
 from modules.resolve_source import resolve, NoSourceFoundError, PoorSourceQualityError, NoDataError
 from modules.download_data import pull_data, DataDownloadError
@@ -43,21 +44,20 @@ from datetime import datetime
 #########################
 # Environment Variables #
 #########################
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'production')
 PORT = int(os.getenv('PORT', 8000))
 ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'cnn_ensemble.pth')
+MODEL_PATH = Path(__file__).resolve().parent / 'models' / 'cnn_ensemble.pth'
 
 #################
 # Logging Setup #
 #################
 
 # Create a log directory and file with a timestamp.
-log_dir = "logs"
-os.makedirs(log_dir, exist_ok=True)
+log_dir = Path("logs").resolve()
 current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_file = os.path.join(log_dir, f"{current_time}.log")
+log_file = log_dir / f"{current_time}.log"
 
 # Configure logging to file and console with detailed formatting.
 file_handler = logging.FileHandler(log_file)
