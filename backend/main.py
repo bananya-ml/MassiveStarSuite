@@ -43,11 +43,11 @@ from datetime import datetime
 #########################
 # Environment Variables #
 #########################
-ENVIRONMENT = os.getenv('ENVIRONMENT', 'production')
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 PORT = int(os.getenv('PORT', 8000))
 ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
-MODEL_PATH = os.getenv('MODEL_PATH', './models/cnn_ensemble.pth')
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'cnn_ensemble.pth')
 
 #################
 # Logging Setup #
@@ -119,9 +119,9 @@ def _clean_temp(data_dir):
     except Exception as e:
         logger.error(f"Error deleting {data_dir} directory: {e}")
 
-##########################
+#########################
 # Custom Error Handlers #
-##########################
+#########################
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
@@ -131,12 +131,12 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={"error": "Internal Server Error", "detail": str(exc)}
     )
 
-######################
+#####################
 # Endpoint Handlers #
-######################
+#####################
 
 @app.get("/")
-async def check():
+async def health_check():
     """
     Health check endpoint to verify that the server is running.
 
@@ -175,6 +175,10 @@ async def predict_by_id(source_id: SourceID, request: Request):
         data = pd.read_csv(csv_files[0])
         X = data['flux'].to_numpy()
         
+        # Extract wavelength and flux data for the spectrum
+        wavelength = data['wavelength'].tolist()
+        flux = data['flux'].tolist()
+
         # Load the model and perform inference.
         model = torch.jit.load(MODEL_PATH, map_location=torch.device('cpu'))
         prediction = inference(model, torch.from_numpy(X).float().unsqueeze(0))
@@ -189,7 +193,11 @@ async def predict_by_id(source_id: SourceID, request: Request):
         return {
             "prediction": prediction.tolist(),
             "ra": float(results['ra'].iloc[0]),
-            "dec": float(results['dec'].iloc[0])
+            "dec": float(results['dec'].iloc[0]),
+            "spectrum": {
+                "wavelength": wavelength,
+                "flux": flux
+            }
         }
     except (NoSourceFoundError, PoorSourceQualityError, NoDataError) as e:
         # Handle known errors related to source resolution and data quality.
@@ -243,8 +251,12 @@ async def predict_by_coordinates(coordinates: Coordinates, request: Request):
         data = pd.read_csv(csv_files[0])
         X = data['flux'].to_numpy()
         
+        # # Extract wavelength and flux data for the spectrum
+        wavelength = data['wavelength'].tolist()
+        flux = data['flux'].tolist()
+
         # Load the model and perform inference.
-        model = torch.jit.load('./models/cnn_ensemble.pth', map_location=torch.device('cpu'))
+        model = torch.jit.load(MODEL_PATH, map_location=torch.device('cpu'))
         prediction = inference(model, torch.from_numpy(X).float().unsqueeze(0))
         
         # Clean up temporary data directory.
@@ -254,7 +266,12 @@ async def predict_by_coordinates(coordinates: Coordinates, request: Request):
         logger.info(f"Prediction for coordinates (RA={coordinates.ra}, Dec={coordinates.dec}) completed in {end_time - start_time:.2f} seconds")
         
         # Return the prediction result.
-        return {"prediction": prediction.tolist()}
+        return {"prediction": prediction.tolist(),
+            "spectrum": {
+                    "wavelength": wavelength,
+                    "flux": flux
+                }
+            }
     except (NoSourceFoundError, PoorSourceQualityError, NoDataError) as e:
         # Handle known errors related to source resolution and data quality.
         logger.warning(f"Source-related error for coordinates (RA={coordinates.ra}, Dec={coordinates.dec}): {str(e)}")
@@ -277,9 +294,9 @@ async def predict_by_coordinates(coordinates: Coordinates, request: Request):
             content={"error": "UnexpectedError", "detail": str(e)}
         )
 
-####################
+#####################
 # Application Entry #
-####################
+#####################
 
 if __name__ == "__main__":
     import uvicorn
