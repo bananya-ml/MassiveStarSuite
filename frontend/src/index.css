@@ -10,6 +10,22 @@
   display: none;
 }
 
+@media (max-width: 768px) {
+  #root {
+    display: none;
+  }
+  .mobile-block-message {
+    display: block;
+    text-align: center;
+    padding: 50px;
+    font-size: 1.5em;
+  }
+}
+
+.mobile-block-message {
+  display: none;
+}
+
 @layer base {
   body {
     @apply bg-cover bg-center;
