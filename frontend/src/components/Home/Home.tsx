@@ -24,9 +24,23 @@ const Home = () => {
         <div className="flex items-center justify-center mb-12">
           <div className="w-3/6">
             <h2 className='text-4xl mb-4 text-center'>
-              <span className="text-white">What are </span>
-              <span className="text-orange-400">massive stars</span>
-              <span className="text-white">, really?</span>
+              <span className="text-white">
+                <BubbleText 
+                  text="What are "
+                  colorScheme='orange'
+                /> 
+              </span>
+              <span className="text-orange-400">
+                <BubbleText 
+                  text="massive stars,"
+                  />
+              </span>
+              <span className="text-white">
+                <BubbleText 
+                  text="really?"
+                  colorScheme='orange'
+                  />
+              </span>
             </h2>
             <div className="text-lg text-white text-center mt-[50px]">
               <BubbleText 
@@ -53,9 +67,16 @@ const Home = () => {
             </p>
           </div>
           <div className="w-3/5">
-            <h2 className='text-4xl mb-4 text-center mt-[85px]'>
-              <span className="text-purple-800">Why do we care</span>
-              <span className="text-white"> about them so much?</span>
+            <h2 className='text-4xl mb-4 text-center mt-[35px]'>
+              <span className="text-white">
+                <BubbleText text="Why do we care"
+                            colorScheme='indigo'/>
+              </span>
+              <span className="text-purple-800">
+                <BubbleText 
+                  text=" about them so much?"
+                />
+              </span>
             </h2>
             <div className="text-lg text-white text-center mt-[50px]">
               <BubbleText 
@@ -63,6 +84,31 @@ const Home = () => {
               colorScheme='indigo'
               />
             </div>
+          </div>
+        </div>
+        <div className="mt-12">
+          <h2 className="text-4xl text-center">
+            <span className="text-white">
+              <BubbleText
+              text="How does it"
+              colorScheme='red'
+              />
+            </span>
+            <span className='text-red-600'>
+              <BubbleText
+              text=" work?"
+              />
+            </span>
+          </h2>
+          <div className="text-lg text-white text-center mt-[30px] mx-48">
+              <BubbleText 
+              text="As discussed above, massive stars are inherently rare and often located in the dense, dust-filled regions of the galaxy, particularly near the galactic center, limiting the quality of available data.
+                    This highlights the need for highly accurate models capable of using through noisy and incomplete data.
+                    We use an extremely lightweight deep learning model designed specifically for rapid and accurate inference on astronomical surveys, which can have over billions of objects.  
+                    We use our model on a standard RTX GPU with 4 GB VRAM, making inferences on over a million objects in under two minutes. 
+                    This speed and efficiency are vital when working with the vast surveys of the universe."
+              colorScheme='red'
+              />
           </div>
         </div>
       </div>

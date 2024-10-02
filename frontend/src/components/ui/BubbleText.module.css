@@ -105,3 +105,28 @@
   font-weight: 300;
   color: #ac0000;
 }
+
+.hoverText-blue:hover {
+  font-weight: 900;
+  color: #4993ff;
+}
+
+.hoverText-blue:hover + .hoverText-blue {
+  font-weight: 500;
+  color: #4993ff;
+}
+
+.hoverText-blue:hover + .hoverText-blue + .hoverText-blue {
+  font-weight: 300;
+  color: #4993ff;
+}
+
+.hoverText-blue:has(+ .hoverText-blue:hover) {
+  font-weight: 500;
+  color: #4993ff;
+}
+
+.hoverText-blue:has(+ .hoverText-blue + .hoverText-blue:hover) {
+  font-weight: 300;
+  color: #4993ff;
+}
