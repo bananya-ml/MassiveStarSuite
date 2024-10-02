@@ -6,6 +6,10 @@
   font-family: 'Noto Sans Variable', sans-serif;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   body {
     @apply bg-cover bg-center;

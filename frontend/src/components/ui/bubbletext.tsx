@@ -2,7 +2,7 @@ import styles from './BubbleText.module.css';
 
 interface BubbleTextProps {
   text: string;
-  colorScheme?: 'default' | 'red' | 'orange' | 'indigo';
+  colorScheme?: 'default' | 'red' | 'orange' | 'indigo' | 'blue';
 }
 
 const BubbleText: React.FC<BubbleTextProps> = ({ text, colorScheme = 'default' }) => {
