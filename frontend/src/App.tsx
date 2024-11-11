@@ -17,9 +17,9 @@ function App() {
       setIsMobile(window.innerWidth <= 768);
     };
 
-    checkMobile(); // Initial check
-    window.addEventListener('resize', checkMobile); // Check on resize
-    return () => window.removeEventListener('resize', checkMobile); // Cleanup
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   if (isMobile) {

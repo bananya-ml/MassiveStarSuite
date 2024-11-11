@@ -30,12 +30,12 @@ const Interactive3DPlot = () => {
             colorScheme='blue'
           />
         </h2>
-        <p className="text-center text-lg text-white mx-80 mt-4">
+        <span className="text-center text-lg text-white mx-80 mt-4">
           <BubbleText 
             text="Check out this interactive plot with over a million stars from our own galaxy! Each red star is a massive star predicted by our model, about 8 times bigger than each low mass star."
             colorScheme='blue'
           />
-        </p>
+        </span>
       </div>
       <div className="flex items-center justify-center rounded bg-zinc-800/75 backdrop-blur-sm saturate-200 border-[1px] border-slate-800 border-solid mt-10 w-full max-w-[90%] mx-auto">
   {plotData ? (

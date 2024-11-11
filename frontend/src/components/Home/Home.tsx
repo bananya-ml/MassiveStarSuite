@@ -20,7 +20,7 @@ const Home = () => {
         particleColor="#FFFFFF"
         />
       </div>
-      <div className="px-6 mt-4">
+      <div className="px-6 mt-32">
         <div className="flex items-center justify-center mb-12">
           <div className="w-3/6">
             <h2 className='text-4xl mb-4 text-center'>
@@ -105,8 +105,7 @@ const Home = () => {
               text="As discussed above, massive stars are inherently rare and often located in the dense, dust-filled regions of the galaxy, particularly near the galactic center, limiting the quality of available data.
                     This highlights the need for highly accurate models capable of using through noisy and incomplete data.
                     We use an extremely lightweight deep learning model designed specifically for rapid and accurate inference on astronomical surveys, which can have over billions of objects.  
-                    We use our model on a standard RTX GPU with 4 GB VRAM, making inferences on over a million objects in under two minutes. 
-                    This speed and efficiency are vital when working with the vast surveys of the universe."
+                    We use our model on a standard NVIDIA RTX GPU with 4 GB VRAM, making inferences on over a million objects in under two minutes."
               colorScheme='red'
               />
           </div>
