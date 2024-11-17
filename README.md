@@ -111,12 +111,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## References
 
 - Gaia DR3 Documentation
-- [Add relevant papers and research references]
 
 ## License
 
-[Specify your license]
+MIT License
 
 ## Contact
 
-[Your contact information]
+bhatnagarananya64@gmail.com
